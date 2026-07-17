@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom';
-import { Gauge, Package, PackageX, Activity, LayoutGrid, GitBranch, Boxes } from 'lucide-react';
+import { Gauge, Package, PackageX, Activity, LayoutGrid, GitBranch, Boxes, Users, BarChart3 } from 'lucide-react';
 import { MODULES } from '../../data/modules';
 
 const ICONS: Record<string, React.ComponentType<{ size?: number; className?: string }>> = {
@@ -9,6 +9,8 @@ const ICONS: Record<string, React.ComponentType<{ size?: number; className?: str
   Activity,
   LayoutGrid,
   GitBranch,
+  Users,
+  BarChart3,
 };
 
 export function Sidebar() {

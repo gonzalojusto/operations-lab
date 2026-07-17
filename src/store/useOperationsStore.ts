@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { computeScoreResult } from '../services/scoring';
+import { useScoreHistoryStore } from './useScoreHistoryStore';
 import type { AnswerScale, Answers, CompanyInfo, CSVResults, ScoreResult, WizardStep } from '../types';
 
 interface OperationsState {
@@ -49,6 +50,12 @@ export const useOperationsStore = create<OperationsState>((set, get) => ({
     const { answers, company, csvResults } = get();
     const score = computeScoreResult(answers, company, csvResults);
     set({ score, step: 'results' });
+    useScoreHistoryStore.getState().addEntry({
+      companyName: company.name || 'Empresa sin nombre',
+      sector: company.sector || 'Sin especificar',
+      globalScore: score.globalScore,
+      maturityLevel: score.maturityLevel,
+    });
   },
 
   reset: () =>

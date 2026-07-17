@@ -157,9 +157,9 @@ negocio descrita en el resumen ejecutivo del proyecto:
 
 ## ✅ Calidad y robustez
 
-- **Tests unitarios** (Vitest, `npm run test`): motor de scoring
-  (`src/services/scoring.test.ts`) y round-trip de codificación de resultados
-  compartibles (`src/utils/shareState.test.ts`), 16 tests en total.
+- **Tests unitarios** (Vitest, `npm run test`): motor de scoring, round-trip
+  de resultados compartibles, estado/tendencia de KPIs, algoritmo de
+  slotting y cálculo de capacidad — 34 tests en total.
 - **`ErrorBoundary`** global evita pantallas en blanco ante errores
   inesperados en producción.
 - **`oxlint`** sobre todo `src/` sin warnings ni errores.
@@ -171,12 +171,18 @@ negocio descrita en el resumen ejecutivo del proyecto:
 
 ## 🗺️ Roadmap del producto
 
-| Versión | Módulo |
-|---|---|
-| **V1** | Operations Score |
-| **V2** | Inventory Analyzer, Dead Stock Manager |
-| **V3** (este repo) | KPI Pulse, SmartSlot Lite |
-| V4 | Process Mapper, Capacity Planner, Operations BI |
+| Versión | Módulo | Estado |
+|---|---|---|
+| V1 | Operations Score | ✅ Live |
+| V2 | Inventory Analyzer, Dead Stock Manager | ✅ Live |
+| V3 | KPI Pulse, SmartSlot Lite | ✅ Live |
+| V4 (este repo) | Process Mapper, Capacity Planner, Operations BI | ✅ Live |
+
+Los 8 módulos del roadmap original están implementados y funcionando. KPI
+Pulse, Process Mapper, Capacity Planner y el historial que alimenta
+Operations BI persisten sus datos en `localStorage` (por navegador, sin
+sincronización entre dispositivos ni backend) usando el middleware `persist`
+de Zustand.
 
 ---
 

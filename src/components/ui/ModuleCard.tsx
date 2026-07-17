@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { ArrowRight, Gauge, Package, PackageX, Activity, LayoutGrid, GitBranch } from 'lucide-react';
+import { ArrowRight, Gauge, Package, PackageX, Activity, LayoutGrid, GitBranch, Users, BarChart3 } from 'lucide-react';
 import type { ProductModule } from '../../types';
 
 const ICONS: Record<string, React.ComponentType<{ size?: number; className?: string }>> = {
@@ -9,6 +9,8 @@ const ICONS: Record<string, React.ComponentType<{ size?: number; className?: str
   Activity,
   LayoutGrid,
   GitBranch,
+  Users,
+  BarChart3,
 };
 
 export function ModuleCard({ module }: { module: ProductModule }) {

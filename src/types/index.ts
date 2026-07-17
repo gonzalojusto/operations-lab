@@ -235,3 +235,45 @@ export interface SlottingResult {
   totalPicks: number;
   warnings: string[];
 }
+
+// ============================================================================
+// Process Mapper (V4)
+// ============================================================================
+export interface ProcessStep {
+  id: string;
+  title: string;
+  description: string;
+  responsible: string;
+  order: number;
+}
+
+// ============================================================================
+// Capacity Planner (V4)
+// ============================================================================
+export interface CapacityInputs {
+  ordersPerDay: number;
+  minutesPerOrder: number;
+  hoursPerEmployeePerDay: number;
+  currentEmployees: number;
+  weeklyDemandMultipliers: number[]; // 7 valores, uno por día de la semana (1 = demanda media)
+}
+
+export interface CapacityResult {
+  requiredEmployees: number;
+  utilization: number; // % de capacidad disponible utilizada
+  gap: number; // positivo = faltan empleados, negativo = sobra capacidad
+  dailyRequiredHours: number[];
+  dailyAvailableHours: number[];
+}
+
+// ============================================================================
+// Operations BI (V4) — historial de diagnósticos de Operations Score
+// ============================================================================
+export interface ScoreHistoryEntry {
+  id: string;
+  date: string; // ISO
+  companyName: string;
+  sector: string;
+  globalScore: number;
+  maturityLevel: MaturityLevel;
+}
