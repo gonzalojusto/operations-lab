@@ -129,11 +129,37 @@ Toda la lógica de cálculo vive en `src/services/scoring.ts`
 
 ---
 
+## 🔗 Estrategia de producto implementada
+
+Más allá del cálculo del score, esta versión materializa la estrategia de
+negocio descrita en el resumen ejecutivo del proyecto:
+
+- **Cross-sell contextual** (`src/data/crossSell.ts`): el dashboard identifica
+  la categoría más débil del diagnóstico y, si existe un módulo futuro de la
+  suite que la resuelve (Inventory Analyzer, KPI Pulse, Process Mapper), lo
+  sugiere explícitamente. Si no hay un módulo relevante para esa categoría,
+  deliberadamente no se sugiere nada — se prioriza no ser intrusivo sobre
+  forzar una recomendación genérica. Esto materializa el pipeline
+  *"Score → detecta problema → sugiere herramienta"* del plan de producto.
+- **Contacto / lead generation**: un botón "Contactar" en el dashboard abre
+  un `mailto:` con el resumen del diagnóstico ya redactado (empresa, score,
+  categoría más débil), y el PDF cierra con los mismos datos de contacto.
+  Sin backend, sin formularios: todo se genera en el cliente.
+- **Resultado compartible** (`src/utils/shareState.ts` + página `/share`):
+  el botón "Compartir resultado" codifica la empresa y las 15 respuestas en
+  un parámetro de la URL (base64 URL-safe, sin datos de CSV). Quien abre el
+  enlace ve el diagnóstico recalculado localmente en su propio navegador —
+  ningún dato pasa por un servidor — y termina con una llamada a la acción
+  para hacer su propio Operations Score, cerrando el bucle viral del lead
+  magnet.
+
+---
+
 ## ✅ Calidad y robustez
 
-- **Tests unitarios** (`src/services/scoring.test.ts`, Vitest) cubren el
-  motor de scoring: ponderación por categoría, score global, umbrales de
-  madurez, Confidence Score y multiplicadores de ahorro. `npm run test`.
+- **Tests unitarios** (Vitest, `npm run test`): motor de scoring
+  (`src/services/scoring.test.ts`) y round-trip de codificación de resultados
+  compartibles (`src/utils/shareState.test.ts`), 16 tests en total.
 - **`ErrorBoundary`** global evita pantallas en blanco ante errores
   inesperados en producción.
 - **`oxlint`** sobre todo `src/` sin warnings ni errores.

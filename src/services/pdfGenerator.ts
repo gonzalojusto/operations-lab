@@ -324,6 +324,28 @@ export async function generatePDFReport(
     doc.text(lines, MARGIN, y);
     y += lines.length * 6 + 8;
   }
+
+  // ---- Contacto / seguimiento (lead magnet) ----
+  doc.setDrawColor(230, 230, 230);
+  doc.line(MARGIN, y, PAGE_W - MARGIN, y);
+  y += 12;
+  doc.setFontSize(12);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(DARK);
+  doc.text('¿Quieres profundizar en estos resultados?', MARGIN, y);
+  y += 8;
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(10);
+  doc.setTextColor(GRAY);
+  doc.text(
+    doc.splitTextToSize(
+      'Este informe ha sido generado por Operations Lab (Gonzalo Justo). Si quieres ayuda para priorizar ' +
+        'estos quick wins o profundizar en el diagnóstico, escribe a gonzalo.justo@gmail.com.',
+      170
+    ),
+    MARGIN,
+    y
+  );
   addFooter(doc, page);
 
   doc.save(`operations-score-${(company.name || 'reporte').toLowerCase().replace(/\s+/g, '-')}.pdf`);

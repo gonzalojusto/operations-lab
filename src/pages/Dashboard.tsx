@@ -9,12 +9,16 @@ import { QuickWinsCard } from '../components/dashboard/QuickWinsCard';
 import { SavingsCard } from '../components/dashboard/SavingsCard';
 import { RoadmapCard } from '../components/dashboard/RoadmapCard';
 import { PDFButton } from '../components/dashboard/PDFButton';
+import { ShareButton } from '../components/dashboard/ShareButton';
+import { CrossSellCard } from '../components/dashboard/CrossSellCard';
+import { ContactCard } from '../components/dashboard/ContactCard';
 import { RadarChart } from '../components/charts/RadarChart';
 import { useOperationsStore } from '../store/useOperationsStore';
+import { getCrossSellRecommendation } from '../data/crossSell';
 
 export function Dashboard() {
   const navigate = useNavigate();
-  const { score, company, csvResults, reset } = useOperationsStore();
+  const { score, company, answers, csvResults, reset } = useOperationsStore();
   const radarRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -24,6 +28,7 @@ export function Dashboard() {
   if (!score) return null;
 
   const csvCount = Object.values(csvResults).filter(Boolean).length;
+  const recommendation = getCrossSellRecommendation(score.categoryScores);
 
   return (
     <AppLayout title="Operations Score · Resultados">
@@ -34,7 +39,7 @@ export function Dashboard() {
           </span>
           <h1 className="text-2xl md:text-3xl font-bold tracking-tight mt-1">Resultado del diagnóstico</h1>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 flex-wrap">
           <button
             onClick={() => {
               reset();
@@ -44,6 +49,7 @@ export function Dashboard() {
           >
             <RotateCcw size={14} /> Nuevo diagnóstico
           </button>
+          <ShareButton company={company} answers={answers} />
           <PDFButton company={company} result={score} radarElement={radarRef.current} />
         </div>
       </div>
@@ -70,7 +76,17 @@ export function Dashboard() {
         <QuickWinsCard quickWins={score.quickWins} />
       </div>
 
-      <RoadmapCard roadmap={score.roadmap} />
+      <div className="mb-5">
+        <RoadmapCard roadmap={score.roadmap} />
+      </div>
+
+      {recommendation && (
+        <div className="mb-5">
+          <CrossSellCard recommendation={recommendation} />
+        </div>
+      )}
+
+      <ContactCard company={company} result={score} />
     </AppLayout>
   );
 }
