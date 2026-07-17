@@ -174,8 +174,8 @@ negocio descrita en el resumen ejecutivo del proyecto:
 | Versión | Módulo |
 |---|---|
 | **V1** | Operations Score |
-| **V2** (este repo) | Inventory Analyzer, Dead Stock Manager |
-| V3 | KPI Pulse, SmartSlot Lite |
+| **V2** | Inventory Analyzer, Dead Stock Manager |
+| **V3** (este repo) | KPI Pulse, SmartSlot Lite |
 | V4 | Process Mapper, Capacity Planner, Operations BI |
 
 ---

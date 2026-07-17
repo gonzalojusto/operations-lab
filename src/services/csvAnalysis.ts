@@ -270,9 +270,40 @@ export async function analyzeOrdersCSV(file: File): Promise<OrdersCSVResult> {
 }
 
 // ============================================================================
-// incidencias.csv
-// Columnas esperadas: tipo/type, severidad/severity, fecha/date
+// picking.csv (SmartSlot Lite)
+// Columnas esperadas: sku, frecuencia/picks/salidas
 // ============================================================================
+export interface PickingRow {
+  sku: string;
+  frequency: number;
+}
+
+export async function analyzePickingCSV(
+  file: File
+): Promise<{ rows: PickingRow[]; warnings: string[] }> {
+  const { data, meta, errors } = await parseCSVFile(file);
+  const fields = meta.fields ?? [];
+  const warnings: string[] = [];
+
+  const skuCol = findColumn(fields, ['sku', 'referencia', 'codigo', 'código']);
+  const freqCol = findColumn(fields, ['frecuencia', 'picks', 'salidas', 'frequency', 'unidades']);
+
+  if (!skuCol) warnings.push('No se detectó columna de SKU/referencia.');
+  if (!freqCol) warnings.push('No se detectó columna de frecuencia/picks: se asumirá 1 por fila.');
+  if (errors.length > 0) warnings.push(`${errors.length} filas con errores de formato.`);
+
+  const totals = new Map<string, number>();
+  for (const row of data) {
+    const sku = skuCol ? row[skuCol]?.trim() : undefined;
+    if (!sku) continue;
+    const freq = freqCol ? toNumber(row[freqCol]) : 1;
+    const safeFreq = Number.isNaN(freq) ? 1 : freq;
+    totals.set(sku, (totals.get(sku) ?? 0) + safeFreq);
+  }
+
+  const rows: PickingRow[] = Array.from(totals.entries()).map(([sku, frequency]) => ({ sku, frequency }));
+  return { rows, warnings };
+}
 export async function analyzeIncidentsCSV(file: File): Promise<IncidentsCSVResult> {
   const { data, meta, errors } = await parseCSVFile(file);
   const fields = meta.fields ?? [];

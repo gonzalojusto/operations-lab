@@ -194,3 +194,44 @@ export interface ProductModule {
 }
 
 export type WizardStep = 'company' | 'questions' | 'csv' | 'results';
+
+// ============================================================================
+// KPI Pulse (V3)
+// ============================================================================
+export type KPIDirection = 'higher-is-better' | 'lower-is-better';
+
+export interface KPIDefinition {
+  id: string;
+  name: string;
+  unit: string;
+  target: number;
+  direction: KPIDirection;
+  isPreset: boolean;
+}
+
+export interface KPIEntry {
+  id: string;
+  kpiId: string;
+  date: string; // ISO date (yyyy-mm-dd)
+  value: number;
+}
+
+export type KPIStatus = 'on-track' | 'at-risk' | 'off-track' | 'no-data';
+
+// ============================================================================
+// SmartSlot Lite (V3)
+// ============================================================================
+export type SlotZone = 'A' | 'B' | 'C';
+
+export interface SlottingRow {
+  sku: string;
+  frequency: number;
+  recommendedZone: SlotZone;
+}
+
+export interface SlottingResult {
+  fileName: string;
+  rows: SlottingRow[];
+  totalPicks: number;
+  warnings: string[];
+}

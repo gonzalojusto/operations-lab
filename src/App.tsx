@@ -5,6 +5,8 @@ import { Dashboard } from './pages/Dashboard';
 import { SharedResult } from './pages/SharedResult';
 import { InventoryAnalyzer } from './pages/InventoryAnalyzer';
 import { DeadStockManager } from './pages/DeadStockManager';
+import { KPIPulse } from './pages/KPIPulse';
+import { SmartSlotLite } from './pages/SmartSlotLite';
 
 // Usamos HashRouter porque el despliegue es en GitHub Pages (sin backend ni
 // configuración de servidor para rutas), evitando 404s en recargas de página.
@@ -18,6 +20,8 @@ function App() {
         <Route path="/share" element={<SharedResult />} />
         <Route path="/inventory-analyzer" element={<InventoryAnalyzer />} />
         <Route path="/dead-stock-manager" element={<DeadStockManager />} />
+        <Route path="/kpi-pulse" element={<KPIPulse />} />
+        <Route path="/smartslot-lite" element={<SmartSlotLite />} />
       </Routes>
     </HashRouter>
   );
