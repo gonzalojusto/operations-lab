@@ -80,6 +80,7 @@ npm run dev       # servidor de desarrollo (http://localhost:5173)
 npm run build     # type-check (tsc -b) + build de producción a /dist
 npm run preview   # sirve /dist localmente para verificar el build
 npm run lint      # oxlint sobre src/
+npm run test      # vitest — tests unitarios del motor de scoring
 npm run deploy    # build + publicación manual en GitHub Pages (rama gh-pages)
 ```
 
@@ -125,6 +126,20 @@ Toda la lógica de cálculo vive en `src/services/scoring.ts`
 > **Nota**: el ahorro potencial estimado es siempre una aproximación
 > orientativa basada en benchmarks sectoriales — nunca se presenta como un
 > compromiso ni una auditoría financiera formal.
+
+---
+
+## ✅ Calidad y robustez
+
+- **Tests unitarios** (`src/services/scoring.test.ts`, Vitest) cubren el
+  motor de scoring: ponderación por categoría, score global, umbrales de
+  madurez, Confidence Score y multiplicadores de ahorro. `npm run test`.
+- **`ErrorBoundary`** global evita pantallas en blanco ante errores
+  inesperados en producción.
+- **`oxlint`** sobre todo `src/` sin warnings ni errores.
+- Revisión manual de las 15 preguntas: se corrigió `tec-02` (dependencia de
+  Excel), cuya redacción original invertía la semántica de la escala 0–5
+  frente al resto del cuestionario.
 
 ---
 

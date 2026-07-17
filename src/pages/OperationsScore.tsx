@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, ArrowRight, Sparkles } from 'lucide-react';
 import { AppLayout } from '../components/layout/AppLayout';
@@ -60,6 +60,20 @@ export function OperationsScore() {
   const nextDisabled =
     (step === 'company' && !canLeaveCompany) ||
     (step === 'questions' && answers[currentQuestion.id] === undefined);
+
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      // Evita interferir con inputs de texto (nombre de empresa, etc.)
+      const target = e.target as HTMLElement;
+      const isTextInput = target.tagName === 'INPUT' || target.tagName === 'SELECT' || target.tagName === 'TEXTAREA';
+      if (e.key === 'Enter' && !nextDisabled && !isTextInput) {
+        goNext();
+      }
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [nextDisabled, step, questionIndex]);
 
   return (
     <AppLayout title="Operations Score">

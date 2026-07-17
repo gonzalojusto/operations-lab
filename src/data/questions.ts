@@ -84,8 +84,8 @@ export const QUESTIONS: Question[] = [
   {
     id: 'tec-02',
     category: 'tecnologia',
-    question: '¿Cuánta dependencia tenéis de Excel para procesos críticos?',
-    description: '5 = mínima dependencia (procesos en sistema); 0 = todo depende de hojas de cálculo.',
+    question: '¿Habéis reducido la dependencia de Excel automatizando procesos críticos?',
+    description: '5 = procesos críticos ya fuera de Excel; 0 = todo depende de hojas de cálculo.',
     weight: 1,
   },
   {
