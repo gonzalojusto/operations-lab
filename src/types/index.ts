@@ -92,6 +92,24 @@ export interface OrdersCSVResult {
   warnings: string[];
 }
 
+export type ABCClass = 'A' | 'B' | 'C';
+
+export interface InventoryRow {
+  sku: string;
+  stock: number;
+  value: number; // stock * coste/precio unitario (o stock si no hay valor)
+  lastSaleDate: string | null; // ISO date o null si no se detectó
+  daysSinceLastSale: number | null;
+  abcClass: ABCClass;
+  isDeadStock: boolean; // sin ventas en > 90 días
+  isExcess: boolean; // heurística de exceso de stock
+}
+
+export interface InventoryDetailedResult {
+  summary: InventoryCSVResult;
+  rows: InventoryRow[];
+}
+
 export interface IncidentsCSVResult {
   fileName: string;
   rowCount: number;

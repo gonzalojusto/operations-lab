@@ -3,6 +3,8 @@ import { Home } from './pages/Home';
 import { OperationsScore } from './pages/OperationsScore';
 import { Dashboard } from './pages/Dashboard';
 import { SharedResult } from './pages/SharedResult';
+import { InventoryAnalyzer } from './pages/InventoryAnalyzer';
+import { DeadStockManager } from './pages/DeadStockManager';
 
 // Usamos HashRouter porque el despliegue es en GitHub Pages (sin backend ni
 // configuración de servidor para rutas), evitando 404s en recargas de página.
@@ -14,6 +16,8 @@ function App() {
         <Route path="/operations-score" element={<OperationsScore />} />
         <Route path="/operations-score/results" element={<Dashboard />} />
         <Route path="/share" element={<SharedResult />} />
+        <Route path="/inventory-analyzer" element={<InventoryAnalyzer />} />
+        <Route path="/dead-stock-manager" element={<DeadStockManager />} />
       </Routes>
     </HashRouter>
   );

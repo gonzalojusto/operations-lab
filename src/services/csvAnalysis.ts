@@ -1,5 +1,11 @@
 import Papa from 'papaparse';
-import type { IncidentsCSVResult, InventoryCSVResult, OrdersCSVResult } from '../types';
+import type {
+  IncidentsCSVResult,
+  InventoryCSVResult,
+  InventoryDetailedResult,
+  InventoryRow,
+  OrdersCSVResult,
+} from '../types';
 
 // ============================================================================
 // Utilidades genéricas de parsing (100% cliente, sin backend)
@@ -42,8 +48,13 @@ function toNumber(value: string | undefined): number {
 // inventario.csv
 // Columnas esperadas (flexibles): sku, stock/cantidad, ultima_venta/last_sale,
 // coste/precio, categoria
+//
+// analyzeInventoryDetailed() es la fuente única de verdad: parsea una vez y
+// devuelve tanto las filas por SKU (para Inventory Analyzer / Dead Stock
+// Manager) como el resumen agregado (para Operations Score, vía el wrapper
+// analyzeInventoryCSV, que se mantiene por compatibilidad).
 // ============================================================================
-export async function analyzeInventoryCSV(file: File): Promise<InventoryCSVResult> {
+export async function analyzeInventoryDetailed(file: File): Promise<InventoryDetailedResult> {
   const { data, meta, errors } = await parseCSVFile(file);
   const fields = meta.fields ?? [];
   const warnings: string[] = [];
@@ -55,20 +66,27 @@ export async function analyzeInventoryCSV(file: File): Promise<InventoryCSVResul
 
   if (!skuCol) warnings.push('No se detectó una columna de SKU/referencia clara.');
   if (!stockCol) warnings.push('No se detectó una columna de stock/cantidad clara.');
+  if (!lastSaleCol) warnings.push('No se detectó columna de última venta: no se pudo calcular dead stock con precisión.');
 
   const seen = new Set<string>();
   let duplicates = 0;
   let missingValues = 0;
-  let deadStockCount = 0;
-  let excessCount = 0;
-
-  const valuedRows: { sku: string; value: number }[] = [];
 
   const now = Date.now();
-  const NINETY_DAYS = 90 * 24 * 60 * 60 * 1000;
 
-  for (const row of data) {
+  interface RawRow {
+    sku: string;
+    stock: number;
+    value: number;
+    lastSaleDate: string | null;
+    daysSinceLastSale: number | null;
+  }
+
+  const rawRows: RawRow[] = [];
+
+  data.forEach((row, i) => {
     const sku = skuCol ? row[skuCol]?.trim() : undefined;
+    const resolvedSku = sku || `(sin SKU · fila ${i + 1})`;
     if (sku) {
       if (seen.has(sku)) duplicates += 1;
       seen.add(sku);
@@ -77,50 +95,77 @@ export async function analyzeInventoryCSV(file: File): Promise<InventoryCSVResul
     const stock = stockCol ? toNumber(row[stockCol]) : NaN;
     if (Number.isNaN(stock)) missingValues += 1;
 
+    let lastSaleDate: string | null = null;
+    let daysSinceLastSale: number | null = null;
     if (lastSaleCol) {
       const raw = row[lastSaleCol];
       const date = raw ? new Date(raw) : undefined;
       if (date && !Number.isNaN(date.getTime())) {
-        if (now - date.getTime() > NINETY_DAYS) deadStockCount += 1;
+        lastSaleDate = date.toISOString();
+        daysSinceLastSale = Math.round((now - date.getTime()) / (24 * 60 * 60 * 1000));
       }
     }
 
-    if (stockCol && !Number.isNaN(stock) && stock > 0) {
-      const value = valueCol ? toNumber(row[valueCol]) : stock;
-      valuedRows.push({ sku: sku ?? '', value: Number.isNaN(value) ? stock : value * stock });
-      if (stock > 500) excessCount += 1; // heurística simple de exceso
-    }
-  }
+    const safeStock = Number.isNaN(stock) ? 0 : stock;
+    const unitValue = valueCol ? toNumber(row[valueCol]) : NaN;
+    const value = Number.isNaN(unitValue) ? safeStock : unitValue * safeStock;
 
-  // ABC analysis (por valor, regla 80/15/5)
-  valuedRows.sort((a, b) => b.value - a.value);
-  const totalValue = valuedRows.reduce((acc, r) => acc + r.value, 0) || 1;
+    rawRows.push({ sku: resolvedSku, stock: safeStock, value, lastSaleDate, daysSinceLastSale });
+  });
+
+  // ABC analysis (por valor, regla 80/15/5) — se calcula sobre las filas con
+  // stock positivo, ordenadas de mayor a menor valor.
+  const positiveStock = rawRows.filter((r) => r.stock > 0).sort((a, b) => b.value - a.value);
+  const totalValue = positiveStock.reduce((acc, r) => acc + r.value, 0) || 1;
+
+  const abcBySku = new Map<RawRow, 'A' | 'B' | 'C'>();
   let cumulative = 0;
   let aCount = 0;
   let bCount = 0;
   let cCount = 0;
-  for (const r of valuedRows) {
+  for (const r of positiveStock) {
     cumulative += r.value;
     const pct = cumulative / totalValue;
-    if (pct <= 0.8) aCount += 1;
-    else if (pct <= 0.95) bCount += 1;
+    const cls: 'A' | 'B' | 'C' = pct <= 0.8 ? 'A' : pct <= 0.95 ? 'B' : 'C';
+    if (cls === 'A') aCount += 1;
+    else if (cls === 'B') bCount += 1;
     else cCount += 1;
+    abcBySku.set(r, cls);
   }
+
+  let deadStockCount = 0;
+  let excessCount = 0;
+
+  const rows: InventoryRow[] = rawRows.map((r) => {
+    const isDeadStock = r.daysSinceLastSale !== null && r.daysSinceLastSale > 90 && r.stock > 0;
+    const isExcess = r.stock > 500; // heurística simple de exceso, consistente con el módulo Operations Score
+    if (isDeadStock) deadStockCount += 1;
+    if (isExcess) excessCount += 1;
+
+    return {
+      sku: r.sku,
+      stock: r.stock,
+      value: r.value,
+      lastSaleDate: r.lastSaleDate,
+      daysSinceLastSale: r.daysSinceLastSale,
+      abcClass: abcBySku.get(r) ?? 'C',
+      isDeadStock,
+      isExcess,
+    };
+  });
 
   const rowCount = data.length;
   const deadStockPercentage = rowCount > 0 ? (deadStockCount / rowCount) * 100 : 0;
 
   if (errors.length > 0) warnings.push(`${errors.length} filas con errores de formato.`);
-  if (!lastSaleCol) warnings.push('No se detectó columna de última venta: no se pudo calcular dead stock con precisión.');
 
-  // Inventory health score simple: penaliza dead stock, duplicados y missing values
   let inventoryHealth = 100;
   inventoryHealth -= Math.min(40, deadStockPercentage);
   inventoryHealth -= Math.min(20, rowCount > 0 ? (duplicates / rowCount) * 100 : 0);
   inventoryHealth -= Math.min(20, rowCount > 0 ? (missingValues / rowCount) * 100 : 0);
   inventoryHealth = Math.max(0, Math.round(inventoryHealth));
 
-  return {
+  const summary: InventoryCSVResult = {
     fileName: file.name,
     rowCount,
     skuCount: seen.size || rowCount,
@@ -133,6 +178,13 @@ export async function analyzeInventoryCSV(file: File): Promise<InventoryCSVResul
     inventoryHealth,
     warnings,
   };
+
+  return { summary, rows };
+}
+
+export async function analyzeInventoryCSV(file: File): Promise<InventoryCSVResult> {
+  const { summary } = await analyzeInventoryDetailed(file);
+  return summary;
 }
 
 // ============================================================================
