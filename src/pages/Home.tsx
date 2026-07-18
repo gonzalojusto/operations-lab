@@ -1,6 +1,6 @@
 import { AppLayout } from '../components/layout/AppLayout';
 import { ModuleCard } from '../components/ui/ModuleCard';
-import { MODULES } from '../data/modules';
+import { groupModulesByCategory } from '../data/modules';
 import { ClipboardList, Gauge, Sparkles } from 'lucide-react';
 
 const STEPS = [
@@ -22,6 +22,8 @@ const STEPS = [
 ];
 
 export function Home() {
+  const groups = groupModulesByCategory();
+
   return (
     <AppLayout>
       <div className="mb-12 fade-in">
@@ -40,9 +42,18 @@ export function Home() {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 mb-16">
-        {MODULES.map((mod) => (
-          <ModuleCard key={mod.id} module={mod} />
+      <div className="space-y-12 mb-16">
+        {groups.map((group) => (
+          <div key={group.category}>
+            <h2 className="text-sm uppercase tracking-wider text-[var(--color-text-muted)] mb-4">
+              {group.label}
+            </h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+              {group.modules.map((mod) => (
+                <ModuleCard key={mod.id} module={mod} />
+              ))}
+            </div>
+          </div>
         ))}
       </div>
 

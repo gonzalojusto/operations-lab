@@ -186,6 +186,43 @@ de Zustand.
 
 ---
 
+## 🧱 Arquitectura pensada para crecer
+
+Con 8 módulos ya en producción, esta versión resuelve dos problemas de
+escala antes de que se convirtieran en deuda técnica real:
+
+- **Code-splitting por ruta** (`React.lazy` + `Suspense` en `App.tsx`): cada
+  módulo se descarga solo cuando el usuario navega a él. El bundle inicial
+  bajó de ~1.1 MB a ~250 KB; los módulos más pesados (los que usan jsPDF,
+  html2canvas o Chart.js) quedan aislados en su propio chunk y no penalizan
+  a quien solo visita la Home o hace el diagnóstico.
+- **Navegación por categorías** (`groupModulesByCategory()` en
+  `src/data/modules.ts`): la Home y el Sidebar agrupan los módulos en
+  *Diagnóstico*, *Inventario*, *KPIs y Procesos*, *Planificación y BI* en
+  lugar de una rejilla plana. Añadir un módulo nuevo a una categoría
+  existente no requiere tocar el layout.
+
+### Cómo añadir un módulo nuevo
+
+1. **Tipos**: añade las interfaces del dominio en `src/types/index.ts`.
+2. **Lógica pura**: crea el servicio de cálculo en `src/services/` (sin
+   dependencias de React) y su test en `*.test.ts` junto al archivo.
+3. **Estado**: si el módulo necesita persistencia entre sesiones, crea un
+   store en `src/store/` con `zustand` + `persist` (localStorage), siguiendo
+   el patrón de `useKPIPulseStore.ts` o `useProcessMapperStore.ts`.
+4. **Componentes**: componentes específicos del módulo van en su propia
+   carpeta bajo `src/components/` (p.ej. `src/components/inventory/`).
+5. **Página**: crea `src/pages/MiModulo.tsx` reutilizando `AppLayout`,
+   `StatCard`, `Gauge` y demás componentes ya existentes en `ui/`.
+6. **Registro**: añade la entrada en `src/data/modules.ts` (con su
+   `category`) — esto la hace aparecer automáticamente en Home y Sidebar.
+7. **Ruta**: añade el `React.lazy(...)` y la `<Route>` correspondiente en
+   `src/App.tsx`.
+8. **Verifica**: `npx tsc -b && npx oxlint src && npm run test && npm run build`
+   deben pasar en verde antes de hacer commit.
+
+---
+
 ## ☁️ Despliegue en GitHub Pages
 
 El repo incluye un workflow de GitHub Actions (`.github/workflows/deploy.yml`)

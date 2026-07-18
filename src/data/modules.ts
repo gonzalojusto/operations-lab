@@ -1,6 +1,15 @@
 import type { ProductModule } from '../types';
 
-export const MODULES: ProductModule[] = [
+export type ModuleCategory = 'diagnostico' | 'inventario' | 'kpis-procesos' | 'planificacion';
+
+export const CATEGORY_LABELS: Record<ModuleCategory, string> = {
+  diagnostico: 'Diagnóstico',
+  inventario: 'Inventario',
+  'kpis-procesos': 'KPIs y Procesos',
+  planificacion: 'Planificación y BI',
+};
+
+export const MODULES: (ProductModule & { category: ModuleCategory })[] = [
   {
     id: 'operations-score',
     name: 'Operations Score',
@@ -8,6 +17,7 @@ export const MODULES: ProductModule[] = [
     status: 'live',
     route: '/operations-score',
     icon: 'Gauge',
+    category: 'diagnostico',
   },
   {
     id: 'inventory-analyzer',
@@ -16,6 +26,7 @@ export const MODULES: ProductModule[] = [
     status: 'live',
     route: '/inventory-analyzer',
     icon: 'Package',
+    category: 'inventario',
   },
   {
     id: 'dead-stock-manager',
@@ -24,14 +35,7 @@ export const MODULES: ProductModule[] = [
     status: 'live',
     route: '/dead-stock-manager',
     icon: 'PackageX',
-  },
-  {
-    id: 'kpi-pulse',
-    name: 'KPI Pulse',
-    description: 'Dashboard en tiempo real de tus KPIs operativos clave.',
-    status: 'live',
-    route: '/kpi-pulse',
-    icon: 'Activity',
+    category: 'inventario',
   },
   {
     id: 'smartslot-lite',
@@ -40,6 +44,16 @@ export const MODULES: ProductModule[] = [
     status: 'live',
     route: '/smartslot-lite',
     icon: 'LayoutGrid',
+    category: 'inventario',
+  },
+  {
+    id: 'kpi-pulse',
+    name: 'KPI Pulse',
+    description: 'Dashboard en tiempo real de tus KPIs operativos clave.',
+    status: 'live',
+    route: '/kpi-pulse',
+    icon: 'Activity',
+    category: 'kpis-procesos',
   },
   {
     id: 'process-mapper',
@@ -48,6 +62,7 @@ export const MODULES: ProductModule[] = [
     status: 'live',
     route: '/process-mapper',
     icon: 'GitBranch',
+    category: 'kpis-procesos',
   },
   {
     id: 'capacity-planner',
@@ -56,6 +71,7 @@ export const MODULES: ProductModule[] = [
     status: 'live',
     route: '/capacity-planner',
     icon: 'Users',
+    category: 'planificacion',
   },
   {
     id: 'operations-bi',
@@ -64,5 +80,17 @@ export const MODULES: ProductModule[] = [
     status: 'live',
     route: '/operations-bi',
     icon: 'BarChart3',
+    category: 'planificacion',
   },
 ];
+
+export function groupModulesByCategory(): { category: ModuleCategory; label: string; modules: typeof MODULES }[] {
+  const order: ModuleCategory[] = ['diagnostico', 'inventario', 'kpis-procesos', 'planificacion'];
+  return order
+    .map((category) => ({
+      category,
+      label: CATEGORY_LABELS[category],
+      modules: MODULES.filter((m) => m.category === category),
+    }))
+    .filter((group) => group.modules.length > 0);
+}
