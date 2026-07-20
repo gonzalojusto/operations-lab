@@ -2,6 +2,8 @@
 
 > **Build Better Operations**
 
+📖 [Manual de usuario](./docs/MANUAL.md) — cómo usar los 8 módulos, paso a paso.
+
 Operations Lab es una suite de herramientas frontend-only para PYMEs (10–500
 empleados) enfocada en operaciones, logística, inventario y KPIs. Todo el
 análisis se ejecuta **100% en el navegador**: sin backend, sin base de datos,
